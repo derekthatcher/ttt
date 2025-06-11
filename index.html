@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Tic Tac Toe</title>
+    <style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    perspective: 1000px; /* Adjust this value for more or less depth */
+    overflow: hidden; /* Prevent scrollbars if elements go out of view */
+    height: 100vh; /* Ensure body takes full viewport height for centering */
+    display: flex; /* Use flexbox for centering */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Center content vertically */
+}
+
+h1 {
+    top: 0;
+    position: absolute;
+}
+
+.grid-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Remove gap here, as we'll use translateY for spacing */
+    margin-top: 0; /* No need for large top margin now */
+    position: relative;
+    transform-style: preserve-3d;
+    /* Center the container itself using transforms */
+    transform: translateY(0px) rotateX(-20deg) rotateY(0deg); /* Adjust overall tilt for the stack */
+    /* Add a slight negative margin-top to pull the whole stack up a bit */
+    margin-top: -100px; /* Adjust as needed to visually center */
+}
+
+.grid-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    position: relative;
+    z-index: 10;
+    color: #333; /* Make labels stand out */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    display: none;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 80px);
+    grid-template-rows: repeat(3, 70px);
+    gap: 10px;
+    border: 2px solid #333;
+    background-color: #fff;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+
+    position: absolute; /* Still needed for stacking */
+    /* Remove top/left and initial translate(-50%, -50%) as we'll use direct translateY */
+    transform-style: preserve-3d;
+    width: fit-content; /* Ensure grid takes only necessary width */
+    height: fit-content; /* Ensure grid takes only necessary height */
+    margin: auto; /* Attempt to center if position absolute issues */
+}
+
+/* Individual grid transforms to create the stack with visible gaps */
+/* Adjust translateY to create vertical spacing */
+/* Adjust translateZ for depth */
+/* Adjust rotateX for individual grid tilt if desired */
+
+/* Top Grid (z=0) */
+/* This targets the div containing the grid for z=0 */
+.grid-container > div:nth-child(2) {
+    transform: translateY(-95px) rotateX(65deg) translateZ(16px);
+        z-index: 3;
+}
+
+/* Middle Grid (z=1) */
+.grid-container > div:nth-child(4) {
+    transform: translateY(1px) rotateX(75deg) translateZ(-27px); /* Reference point, no extra Y or Z movement */
+    z-index: 2;
+}
+
+/* Bottom Grid (z=2) */
+.grid-container > div:nth-child(6) {
+    transform: translateY(86px) rotateX(80deg) translateZ(-74px); /* Move down, tilt backward, push further */
+    z-index: 1;
+}
+
+.cell {
+    width: 80px;
+    height: 70px;
+    border: 1px solid #000;
+    display: flex;
+    flex-direction: column; /* Stack label and content */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: #eee; /* Lighter background for cells */
+}
+
+.cell:hover {
+    background-color: #d0d0d0;
+}
+
+#scoreboard {
+    margin-top: 40vh; /* Adjust this to place it below the stack. Will need tweaking. */
+    position: relative;
+    z-index: 5;
+
+}
+
+    </style>
+</head>
+
+<body>
+    <h1>3D Tic Tac Toe</h1>
+    <div class="grid-container" id="grids"></div>
+    <div id="scoreboard">
+        <p>Player X: <span id="scoreX">0</span></p>
+        <p>Player O: <span id="scoreO">0</span></p>
+    </div>
+    <script>
+        const grids = [];
+        const scores = { X: 0, O: 0 };
+        const winningLines3D = [];
+        let currentPlayer = 'X';
+        createWinStates();
+        // Create 3 grids with labels
+        const gridContainer = document.getElementById('grids');
+        const labels = ['Top Grid', 'Middle Grid', 'Bottom Grid'];
+        for (let z = 0; z < 3; z++) {
+            const label = document.createElement('div');
+            label.className = 'grid-label';
+            label.textContent = labels[z];
+            gridContainer.appendChild(label);
+
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+            grids.push([]);
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.grid = z;
+                    cell.dataset.index = i * 3 + j;
+                    cell.addEventListener('click', handleCellClick);
+                    grid.appendChild(cell);
+                    grids[z].push('');
+                }
+            }
+            gridContainer.appendChild(grid);
+        }
+
+        function handleCellClick(event) {
+            const cell = event.target;
+            const gridIndex = cell.dataset.grid;
+            const cellIndex = cell.dataset.index;
+
+            // Prevent overwriting a cell
+            if (grids[gridIndex][cellIndex] !== '') return;
+
+            // Update cell and grid state
+            cell.textContent = currentPlayer;
+            grids[gridIndex][cellIndex] = currentPlayer;
+
+            // Check for 3-in-a-row
+            checkForWin();
+
+            // Switch player
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        }
+
+        function createWinStates(){
+            // Define all 49 possible winning lines using [z, y, x] coordinates
+            // This makes it easier to conceptualize all winning directions.
+            // Then convert back to [gridIndex, cellIndex] for grid access.
+
+            // 1. Lines along X-axis (rows within each grid) - 3 grids * 3 rows = 9 lines
+            for (let z = 0; z < 3; z++) {
+                for (let y = 0; y < 3; y++) {
+                    winningLines3D.push([[z, y, 0], [z, y, 1], [z, y, 2]]);
+                }
+            }
+
+            // 2. Lines along Y-axis (columns within each grid) - 3 grids * 3 columns = 9 lines
+            for (let z = 0; z < 3; z++) {
+                for (let x = 0; x < 3; x++) {
+                    winningLines3D.push([[z, 0, x], [z, 1, x], [z, 2, x]]);
+                }
+            }
+
+            // 3. Lines along Z-axis (vertical lines through the grids) - 3 rows * 3 columns = 9 lines
+            for (let y = 0; y < 3; y++) {
+                for (let x = 0; x < 3; x++) {
+                    winningLines3D.push([[0, y, x], [1, y, x], [2, y, x]]);
+                }
+            }
+
+            // 4. Diagonals within each XY plane (2D diagonals) - 3 grids * 2 diagonals = 6 lines
+            for (let z = 0; z < 3; z++) {
+                winningLines3D.push([[z, 0, 0], [z, 1, 1], [z, 2, 2]]); // Top-left to bottom-right
+                winningLines3D.push([[z, 0, 2], [z, 1, 1], [z, 2, 0]]); // Top-right to bottom-left
+            }
+
+            // 5. Diagonals within each XZ plane (slice diagonals when looking from front/back) - 3 columns * 2 diagonals = 6 lines
+            for (let x = 0; x < 3; x++) {
+                winningLines3D.push([[0, 0, x], [1, 1, x], [2, 2, x]]); // Front-top to back-bottom
+                winningLines3D.push([[0, 2, x], [1, 1, x], [2, 0, x]]); // Front-bottom to back-top
+            }
+
+            // 6. Diagonals within each YZ plane (slice diagonals when looking from side) - 3 rows * 2 diagonals = 6 lines
+            for (let y = 0; y < 3; y++) {
+                winningLines3D.push([[0, y, 0], [1, y, 1], [2, y, 2]]); // Left-front to right-back
+                winningLines3D.push([[0, y, 2], [1, y, 1], [2, y, 0]]); // Right-front to left-back
+            }
+
+            // 7. Space Diagonals (main 3D diagonals) - 4 lines
+            winningLines3D.push([[0, 0, 0], [1, 1, 1], [2, 2, 2]]); // Corner to opposite corner
+            winningLines3D.push([[0, 0, 2], [1, 1, 1], [2, 2, 0]]); // Corner to opposite corner
+            winningLines3D.push([[0, 2, 0], [1, 1, 1], [2, 0, 2]]); // Corner to opposite corner
+            winningLines3D.push([[0, 2, 2], [1, 1, 1], [2, 0, 0]]); // Corner to opposite corner
+            console.log(winningLines3D);
+        }
+
+        function checkForWin() {
+            scores.X = 0;
+            scores.O = 0;
+
+            // Now, check each defined winning line
+            for (const line3D of winningLines3D) {
+                // Convert 3D coordinates [z, y, x] to [gridIndex, cellIndex]
+                const cell1_grid = line3D[0][0];
+                const cell1_cell = line3D[0][1] * 3 + line3D[0][2];
+
+                const cell2_grid = line3D[1][0];
+                const cell2_cell = line3D[1][1] * 3 + line3D[1][2];
+
+                const cell3_grid = line3D[2][0];
+                const cell3_cell = line3D[2][1] * 3 + line3D[2][2];
+
+                const val1 = grids[cell1_grid][cell1_cell];
+                const val2 = grids[cell2_grid][cell2_cell];
+                const val3 = grids[cell3_grid][cell3_cell];
+
+                if (val1 && val1 === val2 && val1 === val3) {
+                    scores[val1]++;
+                }
+            }
+
+            // Update scoreboard
+            document.getElementById('scoreX').textContent = scores.X;
+            document.getElementById('scoreO').textContent = scores.O;
+        }
+    </script>
+</body>
+
+</html>
