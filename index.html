@@ -114,6 +114,9 @@ h1 {
     left:0;
 
 }
+.winner {
+    font-weight: bold;
+}
 
     </style>
 </head>
@@ -257,6 +260,13 @@ h1 {
             // Update scoreboard
             document.getElementById('scoreX').textContent = scores.X;
             document.getElementById('scoreO').textContent = scores.O;
+            document.getElementById('scoreX').classList.remove("winner");
+            document.getElementById('scoreO').classList.remove("winner");
+            if(scores.X > scores.O){
+                document.getElementById('scoreX').classList.add("winner");
+            } else if(scores.O > scores.X){
+                document.getElementById('scoreO').classList.add("winner");
+            }
         }
     </script>
 </body>
