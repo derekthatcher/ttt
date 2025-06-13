@@ -190,6 +190,16 @@
 
         }
 
+        #playType {
+            margin-top: 40vh;
+            /* Adjust this to place it below the stack. Will need tweaking. */
+            position: absolute;
+            z-index: 5;
+            bottom: 25px;
+            right: 10px;
+
+        }
+
         .winner {
             font-weight: bold;
         }
@@ -203,34 +213,47 @@
         <p>Player X: <span id="scoreX">0</span></p>
         <p>Player O: <span id="scoreO">0</span></p>
     </div>
+    <div id="playType"><input type="checkbox" id="aiPlay" name="aiPlay" value="aiPlay"></div>
     <script>
 
         const scores = { X: 0, O: 0 };
         const winningLines3D = [];
         let currentPlayer = 'X';
+        let aiPlayer = false; // if true ai player plays 'O'
+        const aiPlayCheckbox = document.getElementById('aiPlay');
         createWinStates();
         // Create 3 grids with labels
         const gridContainer = document.getElementById('grids');
         const grids = Array.from({ length: 3 }, () =>
             Array.from({ length: 3 }, () => Array(3).fill(''))
         );
-        // y is vertical (layers), x is horizontal, z is coming forward
-        for (let y = 0; y < 3; y++) {
-            const grid = document.createElement('div');
-            grid.className = 'grid';
-            for (let z = 0; z < 3; z++) {
-                for (let x = 0; x < 3; x++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.dataset.z = z;
-                    cell.dataset.x = x;
-                    cell.dataset.y = y;
-                    cell.addEventListener('click', handleCellClick);
-                    grid.appendChild(cell);
+        printGrids();
+
+        function printGrids() {
+            // y is vertical (layers), x is horizontal, z is coming forward
+            for (let y = 0; y < 3; y++) {
+                const grid = document.createElement('div');
+                grid.className = 'grid';
+                for (let z = 0; z < 3; z++) {
+                    for (let x = 0; x < 3; x++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.z = z;
+                        cell.dataset.x = x;
+                        cell.dataset.y = y;
+                        cell.addEventListener('click', handleCellClick);
+                        grid.appendChild(cell);
+                    }
                 }
+                gridContainer.appendChild(grid);
             }
-            gridContainer.appendChild(grid);
         }
+
+        aiPlayCheckbox.addEventListener('change', function () {
+            // toggle aiplayer
+            aiPlayer = this.checked;
+
+        });
 
         function handleCellClick(event) {
             const cell = event.target;
@@ -242,7 +265,6 @@
 
             // Prevent overwriting a cell
             if (grids[y][x][z] !== '') {
-                console.log(z, x, y, grids[y][x][z]);
                 return;
             }
             // Update cell and grid state
@@ -250,11 +272,53 @@
             grids[y][x][z] = currentPlayer;
 
             // Check for 3-in-a-row
-            checkForWin([y, x, z]);
+            checkForWin([y, x, z], currentPlayer);
 
-            // Switch player
-            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-            console.log("Next go: ", currentPlayer);
+            if (aiPlayer) {
+                // if ai player then make ai move straight away.
+                setTimeout(() => {
+                    aiMove();
+                }, 800); // 800ms delay
+                // no need to switch player.
+            } else {
+                // Switch player
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                console.log("Next go: ", currentPlayer);
+            }
+        }
+
+        function aiMove() {
+            // ai player make move for 'O'
+            // random at first?
+            // Keep track of visited cells to prevent infinite loops if grid is full
+            const totalCells = 27;
+            let attempts = 0;
+
+            while (attempts < totalCells) { // Limit attempts to prevent infinite loop on full grid
+                const x = getRandomInt(0, 2);
+                const y = getRandomInt(0, 2);
+                const z = getRandomInt(0, 2);
+
+                if (grids[y][x][z] === '') {
+                    console.log({ y, x, z }); // Found an empty cell!
+                    // add 'O' to grids
+                    grids[y][x][z] = 'O';
+                    // find cell on screen, add 'O'
+                    const aiCell = document.querySelector(`div.cell[data-x="${x}"][data-y="${y}"][data-z="${z}"]`);
+                    aiCell.textContent = 'O';
+                    // check for winning position
+                    checkForWin([y, x, z], 'O');
+                    // jump out of while loop.
+                    attempts = totalCells;
+                }
+                attempts++;
+            }
+        }
+
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
         function createWinStates() {
@@ -306,7 +370,7 @@
             //console.log(winningLines3D);
         }
 
-        function addPulseEffect(cellElement) {
+        function addPulseEffect(cellElement, currentPlayer) {
             if (cellElement) {
                 if (currentPlayer == 'X') {
                     // Remove the class first to allow the animation to re-trigger if already present
@@ -354,7 +418,7 @@
             return true;
         }
 
-        function checkForWin(playedCell) {
+        function checkForWin(playedCell, currentPlayer) {
             scores.X = 0;
             scores.O = 0;
 
@@ -390,11 +454,11 @@
                     // now pulse winning rows - change to only when includes last placement.
                     if (justPlayed) {
                         const t1 = document.querySelector(`div.cell[data-x="${x1}"][data-y="${y1}"][data-z="${z1}"]`);
-                        addPulseEffect(t1);
+                        addPulseEffect(t1, currentPlayer);
                         const t2 = document.querySelector(`div.cell[data-x="${x2}"][data-y="${y2}"][data-z="${z2}"]`);
-                        addPulseEffect(t2);
+                        addPulseEffect(t2, currentPlayer);
                         const t3 = document.querySelector(`div.cell[data-x="${x3}"][data-y="${y3}"][data-z="${z3}"]`);
-                        addPulseEffect(t3);
+                        addPulseEffect(t3, currentPlayer);
                     }
                 }
             }
