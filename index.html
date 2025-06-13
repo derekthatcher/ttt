@@ -45,17 +45,6 @@
             /* Adjust as needed to visually center */
         }
 
-        .grid-label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            position: relative;
-            z-index: 10;
-            color: #333;
-            /* Make labels stand out */
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-            display: none;
-        }
-
         .grid {
             display: grid;
             grid-template-columns: repeat(3, 80px);
@@ -84,20 +73,20 @@
 
         /* Top Grid (z=0) */
         /* This targets the div containing the grid for z=0 */
-        .grid-container>div:nth-child(2) {
+        .grid-container>div:nth-child(1) {
             transform: translateY(-112px) rotateX(61deg) translateZ(16px);
             z-index: 3;
         }
 
         /* Middle Grid (z=1) */
-        .grid-container>div:nth-child(4) {
-            transform: translateY(1px) rotateX(65deg) translateZ(16px);
+        .grid-container>div:nth-child(2) {
+            transform: translateY(-10px) rotateX(65deg) translateZ(16px);
             /* Reference point, no extra Y or Z movement */
             z-index: 2;
         }
 
         /* Bottom Grid (z=2) */
-        .grid-container>div:nth-child(6) {
+        .grid-container>div:nth-child(3) {
             transform: translateY(105px) rotateX(65deg) translateZ(16px);
             /* Move down, tilt backward, push further */
             z-index: 1;
@@ -188,17 +177,11 @@
         createWinStates();
         // Create 3 grids with labels
         const gridContainer = document.getElementById('grids');
-        const labels = ['Top Grid', 'Middle Grid', 'Bottom Grid'];
         const grids = Array.from({ length: 3 }, () =>
             Array.from({ length: 3 }, () => Array(3).fill(''))
         );
         // y is vertical (layers), x is horizontal, z is coming forward
         for (let y = 0; y < 3; y++) {
-            const label = document.createElement('div');
-            label.className = 'grid-label';
-            label.textContent = labels[y];
-            gridContainer.appendChild(label);
-
             const grid = document.createElement('div');
             grid.className = 'grid';
             for (let z = 0; z < 3; z++) {
