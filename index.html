@@ -112,12 +112,46 @@
             background-color: #d0d0d0;
         }
 
-        .cell.pulse {
-            animation: cell-pulse 2s ease-out forwards;
+        .cell.pulseY {
+            animation: cell-pulseY 2s ease-out forwards;
             /* Apply the animation */
         }
 
-        @keyframes cell-pulse {
+        @keyframes cell-pulseY {
+            0% {
+                background-color: transparent;
+                /* Start with no background or original */
+                box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7);
+                /* Yellow glow, fully opaque */
+                transform: scale(1);
+                /* No scaling initially */
+            }
+
+            50% {
+                background-color: #3bff6c;
+                /* A bright yellow for the peak of the pulse */
+                box-shadow: 0 0 15px 5px rgba(255, 255, 0, 0);
+                /* Yellow glow, fading out */
+                transform: scale(1.05);
+                /* Slightly enlarge the cell */
+            }
+
+            100% {
+                background-color: transparent;
+                /* Fade back to transparent */
+                box-shadow: 0 0 0 0 rgba(255, 255, 0, 0);
+                /* Glow completely gone */
+                transform: scale(1);
+                /* Return to original size */
+            }
+        }
+
+        .cell.pulseG {
+            animation: cell-pulseG 2s ease-out forwards;
+            /* Apply the animation */
+        }
+
+        @keyframes cell-pulseG {
             0% {
                 background-color: transparent;
                 /* Start with no background or original */
@@ -225,9 +259,6 @@
 
         function createWinStates() {
             // Define all 49 possible winning lines using [z, y, x] coordinates
-            // This makes it easier to conceptualize all winning directions.
-            // Then convert back to [gridIndex, cellIndex] for grid access.
-
             // 1. Lines along X-axis (rows within each grid) - 3 grids * 3 rows = 9 lines
             for (let z = 0; z < 3; z++) {
                 for (let y = 0; y < 3; y++) {
@@ -277,36 +308,45 @@
 
         function addPulseEffect(cellElement) {
             if (cellElement) {
-                // Remove the class first to allow the animation to re-trigger if already present
-                // This is important if you want to pulse the same cell multiple times
-                cellElement.classList.remove('pulse');
+                if (currentPlayer == 'X') {
+                    // Remove the class first to allow the animation to re-trigger if already present
+                    // This is important if you want to pulse the same cell multiple times
+                    cellElement.classList.remove('pulseY');
 
-                // Force a reflow/repaint to ensure the animation restarts
-                void cellElement.offsetWidth;
+                    // Force a reflow/repaint to ensure the animation restarts
+                    void cellElement.offsetWidth;
 
-                // Add the class to trigger the animation
-                cellElement.classList.add('pulse');
+                    // Add the class to trigger the animation
+                    cellElement.classList.add('pulseY');
 
-                // Optional: Remove the class after the animation duration
-                // This allows the element to go back to its normal state,
-                // or prepares it for another pulse.
-                // The animation duration is 1s, so we'll remove it slightly after.
-                setTimeout(() => {
-                    cellElement.classList.remove('pulse');
-                }, 2100); // Slightly longer than the animation duration
+                    // The animation duration is 1s, so we'll remove it slightly after.
+                    setTimeout(() => {
+                        cellElement.classList.remove('pulseY');
+                    }, 2100); // Slightly longer than the animation duration
+                } else {
+                    // Remove the class first to allow the animation to re-trigger if already present
+                    // This is important if you want to pulse the same cell multiple times
+                    cellElement.classList.remove('pulseG');
+
+                    // Force a reflow/repaint to ensure the animation restarts
+                    void cellElement.offsetWidth;
+
+                    // Add the class to trigger the animation
+                    cellElement.classList.add('pulseG');
+
+                    // The animation duration is 1s, so we'll remove it slightly after.
+                    setTimeout(() => {
+                        cellElement.classList.remove('pulseG');
+                    }, 2100); // Slightly longer than the animation duration
+                }
             }
         }
 
         function arraysEqual(a, b) {
-            //console.log(a,b);
+            // are the two arrays equal
             if (a === b) return true;
             if (a == null || b == null) return false;
             if (a.length !== b.length) return false;
-
-            // If you don't care about the order of the elements inside
-            // the array, you should sort both arrays here.
-            // Please note that calling sort on an array will modify that array.
-            // you might want to clone your array first.
 
             for (var i = 0; i < a.length; ++i) {
                 if (a[i] !== b[i]) return false;
