@@ -32,7 +32,7 @@ h1 {
     position: relative;
     transform-style: preserve-3d;
     /* Center the container itself using transforms */
-    transform: translateY(0px) rotateX(-20deg) rotateY(0deg); /* Adjust overall tilt for the stack */
+   /* transform: translateY(0px) rotateX(-20deg) rotateY(0deg); /* Adjust overall tilt for the stack */
     /* Add a slight negative margin-top to pull the whole stack up a bit */
     margin-top: -200px; /* Adjust as needed to visually center */
 }
@@ -72,19 +72,19 @@ h1 {
 /* Top Grid (z=0) */
 /* This targets the div containing the grid for z=0 */
 .grid-container > div:nth-child(2) {
-    transform: translateY(-112px) rotateX(65deg) translateZ(16px);
+   transform: translateY(-112px) rotateX(61deg) translateZ(16px);
         z-index: 3;
 }
 
 /* Middle Grid (z=1) */
 .grid-container > div:nth-child(4) {
-    transform: translateY(1px) rotateX(75deg) translateZ(-27px); /* Reference point, no extra Y or Z movement */
+    transform: translateY(1px) rotateX(65deg) translateZ(16px); /* Reference point, no extra Y or Z movement */
     z-index: 2;
 }
 
 /* Bottom Grid (z=2) */
 .grid-container > div:nth-child(6) {
-    transform: translateY(105px) rotateX(80deg) translateZ(-74px); /* Move down, tilt backward, push further */
+    transform: translateY(105px) rotateX(65deg) translateZ(16px); /* Move down, tilt backward, push further */
     z-index: 1;
 }
 
