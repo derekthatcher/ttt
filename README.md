@@ -4,5 +4,5 @@ The most 3-in-a-rows wins.
 
 X goes first.
 
-Has a basic random AI, hit the little checkbox on the bottom right.
+Has a basic random computer player, hit the little checkbox on the bottom right.
 
