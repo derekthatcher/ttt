@@ -1,0 +1,196 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    perspective: 1000px;
+    /* Adjust this value for more or less depth */
+    overflow: hidden;
+    /* Prevent scrollbars if elements go out of view */
+    height: 100vh;
+    /* Ensure body takes full viewport height for centering */
+    display: flex;
+    /* Use flexbox for centering */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Center content vertically */
+}
+
+h1 {
+    top: 0;
+    position: absolute;
+}
+
+.grid-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Remove gap here, as we'll use translateY for spacing */
+    margin-top: 0;
+    /* No need for large top margin now */
+    position: relative;
+    transform-style: preserve-3d;
+    /* Center the container itself using transforms */
+    /* transform: translateY(0px) rotateX(-20deg) rotateY(0deg); /* Adjust overall tilt for the stack */
+    /* Add a slight negative margin-top to pull the whole stack up a bit */
+    margin-top: -200px;
+    /* Adjust as needed to visually center */
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 80px);
+    grid-template-rows: repeat(3, 70px);
+    gap: 10px;
+    border: 2px solid #333;
+    background-color: #fff;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+
+    position: absolute;
+    /* Still needed for stacking */
+    /* Remove top/left and initial translate(-50%, -50%) as we'll use direct translateY */
+    transform-style: preserve-3d;
+    width: fit-content;
+    /* Ensure grid takes only necessary width */
+    height: fit-content;
+    /* Ensure grid takes only necessary height */
+    margin: auto;
+    /* Attempt to center if position absolute issues */
+}
+
+/* Individual grid transforms to create the stack with visible gaps */
+/* Adjust translateY to create vertical spacing */
+/* Adjust translateZ for depth */
+/* Adjust rotateX for individual grid tilt if desired */
+
+/* Top Grid (z=0) */
+/* This targets the div containing the grid for z=0 */
+.grid-container>div:nth-child(1) {
+    transform: translateY(-112px) rotateX(61deg) translateZ(16px);
+    z-index: 3;
+}
+
+/* Middle Grid (z=1) */
+.grid-container>div:nth-child(2) {
+    transform: translateY(-10px) rotateX(65deg) translateZ(16px);
+    /* Reference point, no extra Y or Z movement */
+    z-index: 2;
+}
+
+/* Bottom Grid (z=2) */
+.grid-container>div:nth-child(3) {
+    transform: translateY(105px) rotateX(65deg) translateZ(16px);
+    /* Move down, tilt backward, push further */
+    z-index: 1;
+}
+
+.cell {
+    width: 80px;
+    height: 70px;
+    border: 1px solid #000;
+    display: flex;
+    flex-direction: column;
+    /* Stack label and content */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 35px;
+    font-weight: bold;
+    background-color: #eee;
+    /* Lighter background for cells */
+}
+
+.cell:hover {
+    background-color: #d0d0d0;
+}
+
+.cell.pulseY {
+    animation: cell-pulseY 2s ease-out forwards;
+    /* Apply the animation */
+}
+
+@keyframes cell-pulseY {
+    0% {
+        background-color: transparent;
+        /* Start with no background or original */
+        box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7);
+        /* Yellow glow, fully opaque */
+        transform: scale(1);
+        /* No scaling initially */
+    }
+
+    50% {
+        background-color: #3bff6c;
+        /* A bright yellow for the peak of the pulse */
+        box-shadow: 0 0 15px 5px rgba(255, 255, 0, 0);
+        /* Yellow glow, fading out */
+        transform: scale(1.05);
+        /* Slightly enlarge the cell */
+    }
+
+    100% {
+        background-color: transparent;
+        /* Fade back to transparent */
+        box-shadow: 0 0 0 0 rgba(255, 255, 0, 0);
+        /* Glow completely gone */
+        transform: scale(1);
+        /* Return to original size */
+    }
+}
+
+.cell.pulseG {
+    animation: cell-pulseG 2s ease-out forwards;
+    /* Apply the animation */
+}
+
+@keyframes cell-pulseG {
+    0% {
+        background-color: transparent;
+        /* Start with no background or original */
+        box-shadow: 0 0 0 0 rgba(255, 255, 0, 0.7);
+        /* Yellow glow, fully opaque */
+        transform: scale(1);
+        /* No scaling initially */
+    }
+
+    50% {
+        background-color: #ffeb3b;
+        /* A bright yellow for the peak of the pulse */
+        box-shadow: 0 0 15px 5px rgba(255, 255, 0, 0);
+        /* Yellow glow, fading out */
+        transform: scale(1.05);
+        /* Slightly enlarge the cell */
+    }
+
+    100% {
+        background-color: transparent;
+        /* Fade back to transparent */
+        box-shadow: 0 0 0 0 rgba(255, 255, 0, 0);
+        /* Glow completely gone */
+        transform: scale(1);
+        /* Return to original size */
+    }
+}
+
+#scoreboard {
+    margin-top: 40vh;
+    /* Adjust this to place it below the stack. Will need tweaking. */
+    position: absolute;
+    z-index: 5;
+    bottom: 0;
+    left: 0;
+
+}
+
+#playType {
+    margin-top: 40vh;
+    /* Adjust this to place it below the stack. Will need tweaking. */
+    position: absolute;
+    z-index: 5;
+    bottom: 25px;
+    right: 10px;
+
+}
+
+.winner {
+    font-weight: bold;
+}
