@@ -1,5 +1,6 @@
 const scores = { X: 0, O: 0 };
 const winningLines3D = [];
+let count = 0;
 let currentPlayer = 'X';
 let aiPlayer = false; // if true ai player plays 'O'
 const aiPlayCheckbox = document.getElementById('aiPlay');
@@ -34,7 +35,7 @@ function printGrids() {
 aiPlayCheckbox.addEventListener('change', function () {
     // toggle aiplayer
     aiPlayer = this.checked;
-
+    //todo: reset board and grids.
 });
 
 function handleCellClick(event) {
@@ -59,7 +60,7 @@ function handleCellClick(event) {
     if (aiPlayer) {
         // if ai player then make ai move straight away.
         setTimeout(() => {
-            aiMove();
+            aiMoveMiniMax();
         }, 800); // 800ms delay
         // no need to switch player.
     } else {
@@ -255,4 +256,123 @@ function checkForWin(playedCell, currentPlayer) {
     } else if (scores.O > scores.X) {
         document.getElementById('scoreO').classList.add("winner");
     }
+}
+
+function aiMoveMiniMax() {
+    let bestScore = -Infinity;
+    let bestMove = { y: 0, x: 0, z: 0 };
+    count = 0;
+    for (let y = 0; y < 3; y++) {
+        for (let x = 0; x < 3; x++) {
+            for (let z = 0; z < 3; z++) {
+                if (grids[y][x][z] === '') {
+                    grids[y][x][z] = 'O';
+                    let score = minimax(grids, 0, false);
+                    grids[y][x][z] = '';
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove.y = y;
+                        bestMove.x = x;
+                        bestMove.z = z;
+                    }
+                }
+            }
+        }
+    }
+
+    grids[bestMove.y][bestMove.x][bestMove.z] = 'O';
+    const aiCell = document.querySelector(`div.cell[data-x="${bestMove.x}"][data-y="${bestMove.y}"][data-z="${bestMove.z}"]`);
+    aiCell.textContent = 'O';
+    // check for winning position
+    checkForWin([bestMove.y, bestMove.x, bestMove.z], 'O');
+    //is still X's go.
+}
+
+// mini max taken from https://github.com/spl3ndid/tic-tac-toe-ai-impossible
+function minimax(board, depth, isMaximizing) {
+    const result = checkWinner(board);// needs adjusting.
+    count++;
+    console.log(count, depth);
+    // might need to adjust this to get biggest difference in score.
+    if (result) {
+        if (result === 'O') return 10 - depth;
+        if (result === 'X') return depth - 10;
+        if (result === 'Tie') return 0;
+    }
+
+    if (isMaximizing) {
+        let bestScore = -Infinity;
+        for (let y = 0; y < 3; y++) {
+            for (let x = 0; x < 3; x++) {
+                for (let z = 0; z < 3; z++) {
+                    if (board[y][x][z] === '') {
+                        board[y][x][z] = 'O';
+                        let score = minimax(board, depth + 1, false);
+                        board[y][x][z] = '';
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+            }
+        }
+        return bestScore;
+    } else {
+        let bestScore = Infinity;
+        for (let y = 0; y < 3; y++) {
+            for (let x = 0; x < 3; x++) {
+                for (let z = 0; z < 3; z++) {
+                    if (board[y][x][z] === '') {
+                        board[y][x][z] = 'X';
+                        let score = minimax(board, depth + 1, true);
+                        board[y][x][z] = '';
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+            }
+        }
+        return bestScore;
+    }
+}
+
+/* from given game board, find winner, currently just returns 'X', 'O' or 'Tie'
+ * should change to number of rows wins by */
+function checkWinner(board) {
+    let scoretemp = { X: 0, O: 0 };
+
+    // loop through winning lines, and count all that have same character.
+    for (const line3D of winningLines3D) {
+        const coord1 = line3D[0];
+        const coord2 = line3D[1];
+        const coord3 = line3D[2];
+
+        // y, x, z of the three in a rows
+        const y1 = coord1[0];
+        const x1 = coord1[1];
+        const z1 = coord1[2];
+
+        const y2 = coord2[0];
+        const x2 = coord2[1];
+        const z2 = coord2[2];
+
+        const y3 = coord3[0];
+        const x3 = coord3[1];
+        const z3 = coord3[2];
+
+        const val1 = board[y1][x1][z1];
+        const val2 = board[y2][x2][z2];
+        const val3 = board[y3][x3][z3];
+
+        if (val1 && val1 === val2 && val1 === val3) {
+            scoretemp[val1]++;
+        }
+    }
+
+    if (scoretemp.X > 5 || scoretemp.O > 5) {
+        if (scoretemp.X > scoretemp.O) {
+            return 'X';
+        } else if (scores.O > scores.X) {
+            return 'O';
+        } else {
+            return 'Tie';
+        }
+    }else return null;
 }
