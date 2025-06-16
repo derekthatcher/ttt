@@ -60,7 +60,7 @@ function handleCellClick(event) {
     if (aiPlayer) {
         // if ai player then make ai move straight away.
         setTimeout(() => {
-            aiMoveMiniMax();
+            aiBestMove();
         }, 800); // 800ms delay
         // no need to switch player.
     } else {
@@ -258,7 +258,7 @@ function checkForWin(playedCell, currentPlayer) {
     }
 }
 
-function aiMoveMiniMax() {
+function aiBestMove() {
     let bestScore = -Infinity;
     let bestMove = { y: 0, x: 0, z: 0 };
     count = 0;
@@ -286,51 +286,6 @@ function aiMoveMiniMax() {
     // check for winning position
     checkForWin([bestMove.y, bestMove.x, bestMove.z], 'O');
     //is still X's go.
-}
-
-// mini max taken from https://github.com/spl3ndid/tic-tac-toe-ai-impossible
-function minimax(board, depth, isMaximizing) {
-    const result = checkWinner(board);// needs adjusting.
-    count++;
-    console.log(count, depth);
-    // might need to adjust this to get biggest difference in score.
-    if (result) {
-        if (result === 'O') return 10 - depth;
-        if (result === 'X') return depth - 10;
-        if (result === 'Tie') return 0;
-    }
-
-    if (isMaximizing) {
-        let bestScore = -Infinity;
-        for (let y = 0; y < 3; y++) {
-            for (let x = 0; x < 3; x++) {
-                for (let z = 0; z < 3; z++) {
-                    if (board[y][x][z] === '') {
-                        board[y][x][z] = 'O';
-                        let score = minimax(board, depth + 1, false);
-                        board[y][x][z] = '';
-                        bestScore = Math.max(score, bestScore);
-                    }
-                }
-            }
-        }
-        return bestScore;
-    } else {
-        let bestScore = Infinity;
-        for (let y = 0; y < 3; y++) {
-            for (let x = 0; x < 3; x++) {
-                for (let z = 0; z < 3; z++) {
-                    if (board[y][x][z] === '') {
-                        board[y][x][z] = 'X';
-                        let score = minimax(board, depth + 1, true);
-                        board[y][x][z] = '';
-                        bestScore = Math.min(score, bestScore);
-                    }
-                }
-            }
-        }
-        return bestScore;
-    }
 }
 
 /* from given game board, find winner, currently just returns 'X', 'O' or 'Tie'
