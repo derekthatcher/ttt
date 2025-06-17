@@ -61,7 +61,7 @@ function handleCellClick(event) {
         setTimeout(() => {
             aiBestMove();
             console.log("ai play");
-        }, 800); // 800ms delay
+        }, 200); // 800ms delay
         // no need to switch player.
     } else {
         // Switch player

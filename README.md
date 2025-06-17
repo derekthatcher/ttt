@@ -6,3 +6,5 @@ X goes first.
 
 Has a basic random computer player, hit the little checkbox on the bottom right.
 
+Todo - fix computer player and stop human clicking when computer 
+
