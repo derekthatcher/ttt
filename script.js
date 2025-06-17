@@ -1,6 +1,5 @@
 const scores = { X: 0, O: 0 };
 const winningLines3D = [];
-let count = 0;
 let currentPlayer = 'X';
 let aiPlayer = false; // if true ai player plays 'O'
 const aiPlayCheckbox = document.getElementById('aiPlay');
@@ -61,6 +60,7 @@ function handleCellClick(event) {
         // if ai player then make ai move straight away.
         setTimeout(() => {
             aiBestMove();
+            console.log("ai play");
         }, 800); // 800ms delay
         // no need to switch player.
     } else {
@@ -259,16 +259,18 @@ function checkForWin(playedCell, currentPlayer) {
 }
 
 function aiBestMove() {
-    let bestScore = -Infinity;
+    /* - could add depth to this - look n moves ahead.
+    * Go through each empty cell and find the one that give the best score (=+1,2,3 rows for AI)
+    * if no score availible look for reverse, best score for 'X' and then block.
+    * else randomly select the best other cell: mega centre -> corner -> center side - >edge 
+    */
+    let bestScore = -10;
     let bestMove = { y: 0, x: 0, z: 0 };
-    count = 0;
     for (let y = 0; y < 3; y++) {
         for (let x = 0; x < 3; x++) {
             for (let z = 0; z < 3; z++) {
                 if (grids[y][x][z] === '') {
-                    grids[y][x][z] = 'O';
-                    let score = minimax(grids, 0, false);
-                    grids[y][x][z] = '';
+                    let score = checkMove({ y: y, x: x, z: z }, 'O')
                     if (score > bestScore) {
                         bestScore = score;
                         bestMove.y = y;
@@ -279,20 +281,32 @@ function aiBestMove() {
             }
         }
     }
-
-    grids[bestMove.y][bestMove.x][bestMove.z] = 'O';
-    const aiCell = document.querySelector(`div.cell[data-x="${bestMove.x}"][data-y="${bestMove.y}"][data-z="${bestMove.z}"]`);
-    aiCell.textContent = 'O';
+    if (bestScore > -5) {
+        grids[bestMove.y][bestMove.x][bestMove.z] = 'O';
+        const aiCell = document.querySelector(`div.cell[data-x="${bestMove.x}"][data-y="${bestMove.y}"][data-z="${bestMove.z}"]`);
+        aiCell.textContent = 'O';
+    } else {
+        aiMove(); // random.
+    }
     // check for winning position
     checkForWin([bestMove.y, bestMove.x, bestMove.z], 'O');
     //is still X's go.
 }
 
-/* from given game board, find winner, currently just returns 'X', 'O' or 'Tie'
- * should change to number of rows wins by */
-function checkWinner(board) {
+/* from game board, move={ y: 0, x: 0, z: 0 } and player 'X' or 'O' return point increase that move makes.  */
+function checkMove(move, player) {
     let scoretemp = { X: 0, O: 0 };
-
+    let gameboard = [];
+    for (let y = 0; y < grids.length; y++) {
+        gameboard[y] = [];
+        for (let x = 0; x < grids[y].length; x++) {
+            gameboard[y][x] = [];
+            for (let z = 0; z < grids[y][x].length; z++) {
+                gameboard[y][x][z] = grids[y][x][z]; // Copy the primitive value
+            }
+        }
+    }
+    gameboard[move.y][move.x][move.z] = player;
     // loop through winning lines, and count all that have same character.
     for (const line3D of winningLines3D) {
         const coord1 = line3D[0];
@@ -312,22 +326,14 @@ function checkWinner(board) {
         const x3 = coord3[1];
         const z3 = coord3[2];
 
-        const val1 = board[y1][x1][z1];
-        const val2 = board[y2][x2][z2];
-        const val3 = board[y3][x3][z3];
+        const val1 = gameboard[y1][x1][z1];
+        const val2 = gameboard[y2][x2][z2];
+        const val3 = gameboard[y3][x3][z3];
 
         if (val1 && val1 === val2 && val1 === val3) {
             scoretemp[val1]++;
         }
     }
-
-    if (scoretemp.X > 5 || scoretemp.O > 5) {
-        if (scoretemp.X > scoretemp.O) {
-            return 'X';
-        } else if (scores.O > scores.X) {
-            return 'O';
-        } else {
-            return 'Tie';
-        }
-    }else return null;
+    // return differnece in actual score to temp score for player.
+    return scoretemp[player] - scores[player];
 }
