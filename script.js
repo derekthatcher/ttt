@@ -270,12 +270,19 @@ function aiBestMove() {
         for (let x = 0; x < 3; x++) {
             for (let z = 0; z < 3; z++) {
                 if (grids[y][x][z] === '') {
-                    let score = checkMove({ y: y, x: x, z: z }, 'O')
-                    if (score > bestScore) {
-                        bestScore = score;
+                    let scoreO = checkMove({ y: y, x: x, z: z }, 'O');
+                    let scoreX = checkMove({ y: y, x: x, z: z }, 'X');
+                    if (scoreO > bestScore) {
+                        bestScore = scoreO;
                         bestMove.y = y;
                         bestMove.x = x;
                         bestMove.z = z;
+                    } else if (scoreX > bestScore) {
+                        bestScore = scoreX;
+                        bestMove.y = y;
+                        bestMove.x = x;
+                        bestMove.z = z;
+                        console.log("defense:",scoreX);
                     }
                 }
             }
@@ -285,11 +292,14 @@ function aiBestMove() {
         grids[bestMove.y][bestMove.x][bestMove.z] = 'O';
         const aiCell = document.querySelector(`div.cell[data-x="${bestMove.x}"][data-y="${bestMove.y}"][data-z="${bestMove.z}"]`);
         aiCell.textContent = 'O';
+        console.log("best score: ",bestScore, bestMove.y, bestMove.x, bestMove.z);
+        // check for winning position
+        checkForWin([bestMove.y, bestMove.x, bestMove.z], 'O');
     } else {
         aiMove(); // random.
+        console.log("ai move");
     }
-    // check for winning position
-    checkForWin([bestMove.y, bestMove.x, bestMove.z], 'O');
+
     //is still X's go.
 }
 
@@ -334,6 +344,6 @@ function checkMove(move, player) {
             scoretemp[val1]++;
         }
     }
-    // return differnece in actual score to temp score for player.
+    // return difference in actual score to temp score for player.
     return scoretemp[player] - scores[player];
 }
