@@ -3,13 +3,21 @@ const winningLines3D = [];
 let currentPlayer = 'X';
 let aiPlayer = false; // if true ai player plays 'O'
 const aiPlayCheckbox = document.getElementById('aiPlay');
-createWinStates();
-// Create 3 grids with labels
 const gridContainer = document.getElementById('grids');
-const grids = Array.from({ length: 3 }, () =>
-    Array.from({ length: 3 }, () => Array(3).fill(''))
-);
-printGrids();
+let grids = [];
+initialise();
+
+function initialise() {
+    currentPlayer = 'X';
+    scores.O = 0;
+    scores.X = 0;
+    gridContainer.innerHTML = "";
+    grids = Array.from({ length: 3 }, () =>
+        Array.from({ length: 3 }, () => Array(3).fill(''))
+    );
+    createWinStates();
+    printGrids();
+}
 
 function printGrids() {
     // y is vertical (layers), x is horizontal, z is coming forward
@@ -35,6 +43,7 @@ aiPlayCheckbox.addEventListener('change', function () {
     // toggle aiplayer
     aiPlayer = this.checked;
     //todo: reset board and grids.
+    initialise();
 });
 
 function handleCellClick(event) {
