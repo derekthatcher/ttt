@@ -6,6 +6,7 @@ const aiPlayCheckbox = document.getElementById('aiPlay');
 const gridContainer = document.getElementById('grids');
 let grids = [];
 initialise();
+createWinStates();
 
 function initialise() {
     currentPlayer = 'X';
@@ -15,7 +16,6 @@ function initialise() {
     grids = Array.from({ length: 3 }, () =>
         Array.from({ length: 3 }, () => Array(3).fill(''))
     );
-    createWinStates();
     printGrids();
 }
 
